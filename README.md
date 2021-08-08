@@ -209,3 +209,8 @@ func main() {
 	println("index deleted")
 }
 ```
+
+## TODO
+
+* Update parser to support search flags that modifies the number of returned items in search response (NOCONTENT, WITHSCORES, WITHPAYLOADS, WITHSORTKEYS)
+* Query builder
