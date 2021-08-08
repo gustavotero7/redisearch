@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-// RediSearch hold basic methods to interact with redisearch module for redis
-type RediSearch interface {
+// Client hold basic methods to interact with redisearch module for redis
+type Client interface {
 	Search(ctx stdContext.Context, opts SearchOptions, out interface{}) (int64, error)
 	CreateIndex(ctx stdContext.Context, opts IndexOptions, dropIfExists bool) error
 	DropIndex(ctx stdContext.Context, name string, purgeIndexData bool) error
@@ -38,21 +38,22 @@ var supportedDataTypes = map[reflect.Kind]struct{}{
 	reflect.Float64: {},
 }
 
-type rediSearch struct {
+// RediSearch implements Client
+type RediSearch struct {
 	client *redis.Client
 }
 
 // New return a new redisearch implementation instance
-func New(opts *redis.Options) RediSearch {
+func New(opts *redis.Options) Client {
 	client := redis.NewClient(opts)
-	return &rediSearch{client: client}
+	return &RediSearch{client: client}
 }
 
 // Add simple wrapper for redis.HSet. This is just a utility, you can still use the data added using HSET command
 // key: set key
 // value: map ([string]string or [string]interface{}) or struct to be stored in the set
 // override: Delete precious set to create a fresh one only with the values provided
-func (r *rediSearch) Add(ctx stdContext.Context, key string, value interface{}, override bool) error {
+func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, override bool) error {
 	if key == "" || value == nil {
 		return errors.New("invalid key or nil value")
 	}
@@ -88,7 +89,7 @@ func (r *rediSearch) Add(ctx stdContext.Context, key string, value interface{}, 
 }
 
 // Search the index with a textual query
-func (r *rediSearch) Search(ctx stdContext.Context, opts SearchOptions, out interface{}) (int64, error) {
+func (r *RediSearch) Search(ctx stdContext.Context, opts SearchOptions, out interface{}) (int64, error) {
 	if opts.IndexName == "" || opts.Query == "" {
 		return 0, errors.New("missing required (IndexName or Query)")
 	}
@@ -272,7 +273,7 @@ func (r *rediSearch) Search(ctx stdContext.Context, opts SearchOptions, out inte
 }
 
 // CreateIndex with the given spec
-func (r *rediSearch) CreateIndex(ctx stdContext.Context, opts IndexOptions, dropIfExists bool) error {
+func (r *RediSearch) CreateIndex(ctx stdContext.Context, opts IndexOptions, dropIfExists bool) error {
 	exists, err := r.IndexExists(ctx, opts.IndexName)
 	if err != nil {
 		return err
@@ -355,7 +356,7 @@ func (r *rediSearch) CreateIndex(ctx stdContext.Context, opts IndexOptions, drop
 }
 
 // DropIndex with the given name. Optionally delete all indexed data
-func (r *rediSearch) DropIndex(ctx stdContext.Context, name string, purgeIndexData bool) error {
+func (r *RediSearch) DropIndex(ctx stdContext.Context, name string, purgeIndexData bool) error {
 	args := []interface{}{
 		"FT.DROPINDEX",
 		name,
@@ -369,7 +370,7 @@ func (r *rediSearch) DropIndex(ctx stdContext.Context, name string, purgeIndexDa
 }
 
 // IndexExists return true if the index exists
-func (r *rediSearch) IndexExists(ctx stdContext.Context, name string) (bool, error) {
+func (r *RediSearch) IndexExists(ctx stdContext.Context, name string) (bool, error) {
 	args := []interface{}{
 		"FT.INFO",
 		name,
