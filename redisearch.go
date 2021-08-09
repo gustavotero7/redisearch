@@ -265,10 +265,8 @@ func (r *RediSearch) Search(ctx stdContext.Context, opts SearchOptions, out inte
 	do := r.client.Do(ctx, args...)
 	res, err := do.Result()
 	if err != nil {
-		println("SEARCH ERR: ", err.Error())
 		return 0, err
 	}
-	fmt.Printf("SEARCH RES: ***%+v*** %T\n", res, res)
 	return parseSearchResults(res, out)
 }
 
@@ -347,7 +345,6 @@ func (r *RediSearch) CreateIndex(ctx stdContext.Context, opts IndexOptions, drop
 			}
 		}
 	}
-	fmt.Println(args...)
 	do := r.client.Do(ctx, args...)
 	if _, err := do.Result(); err != nil {
 		return err
