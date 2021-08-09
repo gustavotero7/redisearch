@@ -81,9 +81,16 @@ func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, 
 			continue // ignore unsupported type
 		}
 		k := val.Type().Field(i).Name
-		v := val.Field(i).Interface()
-		values = append(values, k, v)
-
+		if tag := val.Type().Field(i).Tag.Get("json"); tag != "" {
+			tagSlice := strings.Split(tag, ",")
+			if tagSlice[0] != "" {
+				k = tagSlice[0]
+			}
+		}
+		if k != "" && k != "-" {
+			v := val.Field(i).Interface()
+			values = append(values, k, v)
+		}
 	}
 	return r.client.HSet(ctx, key, values...).Err()
 }
