@@ -81,7 +81,7 @@ func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, 
 			continue // ignore unsupported type
 		}
 		k := val.Type().Field(i).Name
-		v := val.Field(i).Elem().Interface()
+		v := val.Field(i).Interface()
 		values = append(values, k, v)
 
 	}
