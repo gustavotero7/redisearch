@@ -260,3 +260,70 @@ func Test_parseSearchResults(t *testing.T) {
 		})
 	}
 }
+
+func Benchmark_parseSearchResults_map(b *testing.B) {
+	b.ReportAllocs()
+	// run the Fib function b.N times
+	for n := 0; n < b.N; n++ {
+		raw := []interface{}{
+			int64(1),
+			"doc:id",
+			[]interface{}{
+				"title",
+				"Test Title",
+				"year",
+				"2021",
+				"active",
+				"true",
+				"score",
+				"12.8",
+				"unsupported",
+				"0",
+				"notinmodel",
+				"0",
+			},
+		}
+		var out []map[string]interface{}
+		_, err := parseSearchResults(raw, &out)
+		if err != nil {
+			b.Error(err)
+		}
+
+	}
+}
+
+func Benchmark_parseSearchResults_struct(b *testing.B) {
+	b.ReportAllocs()
+	// run the Fib function b.N times
+	for n := 0; n < b.N; n++ {
+		raw := []interface{}{
+			int64(1),
+			"doc:id",
+			[]interface{}{
+				"title",
+				"Test Title",
+				"year",
+				"2021",
+				"active",
+				"true",
+				"score",
+				"12.8",
+				"unsupported",
+				"0",
+				"notinmodel",
+				"0",
+			},
+		}
+		var out []struct{
+			Title string`json:"title"`
+			Year int `json:"year"`
+			Active bool `json:"active"`
+			Score float32 `json:"score"`
+			Another float32 `json:"another"`
+		}
+		_, err := parseSearchResults(raw, &out)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}

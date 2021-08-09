@@ -71,7 +71,7 @@ func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, 
 	if val.Kind() == reflect.Ptr || val.Kind() == reflect.Interface {
 		val = val.Elem()
 	}
-	if val.Kind() != reflect.Map || val.Kind() != reflect.Struct {
+	if val.Kind() != reflect.Map && val.Kind() != reflect.Struct {
 		return errors.New("{values} arg must be of type map or struct")
 	}
 
@@ -475,7 +475,7 @@ func parseSearchResults(raw interface{}, out interface{}) (int64, error) {
 				}
 				switch kind := field.Kind(); {
 				case kind == reflect.String:
-					field.Set(reflect.ValueOf(v))
+					field.SetString(v)
 				case kind >= reflect.Int && kind <= reflect.Uint64:
 					vInt, _ := strconv.ParseInt(v, 10, 64)
 					field.Set(reflect.ValueOf(vInt).Convert(field.Type()))
@@ -484,7 +484,7 @@ func parseSearchResults(raw interface{}, out interface{}) (int64, error) {
 					field.Set(reflect.ValueOf(vFloat).Convert(field.Type()))
 				case kind == reflect.Bool:
 					vBool := v[0] == 't' || v[0] == '1'
-					field.Set(reflect.ValueOf(vBool).Convert(field.Type()))
+					field.SetBool(vBool)
 				}
 			}
 		}
