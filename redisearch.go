@@ -18,6 +18,8 @@ type Client interface {
 	DropIndex(ctx stdContext.Context, name string, purgeIndexData bool) error
 	IndexExists(ctx stdContext.Context, name string) (bool, error)
 	Add(ctx stdContext.Context, key string, value interface{}, override bool) error
+	Put(ctx stdContext.Context, key string, value interface{}, override bool) error
+	Delete(ctx stdContext.Context, key string,) error
 }
 
 var supportedDataTypes = map[reflect.Kind]struct{}{
@@ -49,11 +51,18 @@ func New(opts *redis.Options) Client {
 	return &RediSearch{client: client}
 }
 
-// Add simple wrapper for redis.HSet. This is just a utility, you can still use the data added using HSET command
+// Add legacy name used for Put()
+// DEPRECATED kept for compatibility
+func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, override bool) error {
+	return r.Put(ctx, key, value, override)
+}
+
+
+// Put simple wrapper for redis.HSet. This is just a utility, you can still use the data added using HSET command
 // key: set key
 // value: map ([string]string or [string]interface{}) or struct to be stored in the set
 // override: Delete precious set to create a fresh one only with the values provided
-func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, override bool) error {
+func (r *RediSearch) Put(ctx stdContext.Context, key string, value interface{}, override bool) error {
 	if key == "" || value == nil {
 		return errors.New("invalid key or nil value")
 	}
@@ -93,6 +102,11 @@ func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, 
 		}
 	}
 	return r.client.HSet(ctx, key, values...).Err()
+}
+
+// Delete drop document attached to the given key
+func (r *RediSearch) Delete(ctx stdContext.Context, key string) error {
+	return r.client.Del(ctx, key).Err()
 }
 
 // Search the index with a textual query
