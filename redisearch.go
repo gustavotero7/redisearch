@@ -111,7 +111,7 @@ func (r *RediSearch) Delete(ctx stdContext.Context, key string) error {
 
 // Search the index with a textual query
 func (r *RediSearch) Search(ctx stdContext.Context, opts SearchOptions, out interface{}) (int64, error) {
-	if opts.IndexName == "" || opts.Query == "" {
+	if opts.IndexName == "" {
 		return 0, errors.New("missing required (IndexName or Query)")
 	}
 	args := []interface{}{
