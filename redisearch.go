@@ -4,7 +4,7 @@ import (
 	stdContext "context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"reflect"
 	"strconv"
@@ -19,7 +19,7 @@ type Client interface {
 	IndexExists(ctx stdContext.Context, name string) (bool, error)
 	Add(ctx stdContext.Context, key string, value interface{}, override bool) error
 	Put(ctx stdContext.Context, key string, value interface{}, override bool) error
-	Delete(ctx stdContext.Context, key string,) error
+	Delete(ctx stdContext.Context, key string) error
 }
 
 var supportedDataTypes = map[reflect.Kind]struct{}{
@@ -56,7 +56,6 @@ func New(opts *redis.Options) Client {
 func (r *RediSearch) Add(ctx stdContext.Context, key string, value interface{}, override bool) error {
 	return r.Put(ctx, key, value, override)
 }
-
 
 // Put simple wrapper for redis.HSet. This is just a utility, you can still use the data added using HSET command
 // key: set key
